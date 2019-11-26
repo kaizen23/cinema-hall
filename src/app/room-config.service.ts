@@ -4,6 +4,7 @@ import { ActivatedRoute } from '@angular/router';
 import { FormArray, FormControl, FormGroup, Validators } from '@angular/forms';
 import { debounceTime, distinctUntilChanged, filter, map, scan, switchMap, tap } from 'rxjs/operators';
 import { BehaviorSubject, of, pipe } from 'rxjs';
+import { NewDbService } from './new-db.service';
 
 function debounceDistinct(debounce: number) {
   return pipe(debounceTime(debounce), distinctUntilChanged());
@@ -37,7 +38,7 @@ export class RoomConfigService {
 
   selectSeatsErrors$ = new BehaviorSubject(null);
 
-  constructor(private db: DbService, private route: ActivatedRoute) {
+  constructor(private db: NewDbService, private route: ActivatedRoute) {
 
     this.numOfSeats$ = this.selectedSeats$.pipe(
       scan((acc, val) => acc + val, 0)

@@ -2,6 +2,7 @@ import { Component, Input, OnInit } from '@angular/core';
 import { DbService } from '../db.service';
 import { ActivatedRoute } from '@angular/router';
 import { RoomConfigService } from '../room-config.service';
+import { NewDbService } from '../new-db.service';
 
 @Component({
   selector: 'app-room-config',
@@ -49,7 +50,7 @@ export class RoomConfigComponent implements OnInit {
   editRoomName = false;
   roomConfigForm;
 
-  constructor(private db: DbService, private route: ActivatedRoute, public roomConfigService: RoomConfigService) {
+  constructor(private db: NewDbService, private route: ActivatedRoute, public roomConfigService: RoomConfigService) {
     this.roomValue$ = this.roomConfigService.roomValue$;
     this.roomId$ = this.roomConfigService.roomId$;
     roomConfigService.roomConfigForm$.subscribe(form => this.roomConfigForm = form);

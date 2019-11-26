@@ -1,6 +1,39 @@
 import { Injectable } from '@angular/core';
 import Dexie from 'dexie';
-import { from } from 'rxjs';
+import { from, BehaviorSubject, of, interval } from 'rxjs';
+import { map } from 'rxjs/operators';
+
+export interface Seatt {
+  rowId: number;
+  seatId: number;
+}
+
+export interface SeatsUpdate {
+  occupied: Array<Seatt>;
+  released: Array<Seatt>;
+}
+
+export interface SeatsList {
+  row: number;
+  seats: number[];
+}
+
+export interface TakenSeats {
+  taken: Array<SeatsList>;
+  released: Array<SeatsList>;
+}
+
+const takenSeats: TakenSeats[] = [
+  { taken: [{ row: 1, seats: [1, 2, 3, 4] }, { row: 2, seats: [1, 2, 6, 7, 8] }], released: [] },
+  { taken: [{ row: 1, seats: [5, 6, 10, 11] }, { row: 2, seats: [10, 11, 12] }, { row: 2, seats: [16, 17, 18] }], released: [] },
+  { taken: [], released: [{ row: 1, seats: [1, 2, 3] }] },
+  { taken: [{ row: 3, seats: [12, 13, 14, 15] }], released: [] }
+];
+
+const takenSeats$ = interval(5000).pipe(
+  map(val => takenSeats[val % takenSeats.length])
+  // tap(v => console.log(v))
+);
 
 export interface RoomConfig {
   id?: number;
@@ -25,6 +58,8 @@ export interface SeatType {
 export class NewDbService extends Dexie {
   roomConfigs: Dexie.Table<RoomConfig, number>;
   seatTypes: Dexie.Table<SeatType, number>;
+  takenSeats$ = takenSeats$;
+  seatsUpdate$: BehaviorSubject<SeatsUpdate> = new BehaviorSubject(null);
 
   constructor() {
 
@@ -62,4 +97,41 @@ export class NewDbService extends Dexie {
       }
     });
   }
+
+  isSeatOccupied(roomId, rowId, seatId) {
+    return of(true);
+  }
+
+  getRoom(index) {
+    return from(this.getRoomConfig(index)).pipe(
+      map(room => {
+        return toRoomFormValue(room);
+      })
+    );
+  }
+
+  getRoomConfig(index) {
+    return index ? this.roomConfigs.get(+index) : Promise.resolve(null);
+  }
+
+  getRoomConfigs() {
+    return this.roomConfigs.toArray();
+  }
+
+  saveRoom(config) {
+    return from(this.saveRoomConfig(config));
+  }
+}
+
+function toRoomFormValue(roomConfig: RoomConfig) {
+  const room = roomConfig.room || {
+    rows: Array.from({ length: roomConfig.rowCount }, (row) => ({
+      seatCount: roomConfig.avgSeatsInRow,
+      seats: Array.from({ length: roomConfig.avgSeatsInRow })
+    }))
+  };
+  return {
+    ...roomConfig,
+    room
+  };
 }

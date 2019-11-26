@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { DbService } from '../db.service';
+import { NewDbService } from '../new-db.service';
 
 @Component({
   selector: 'app-header',
@@ -42,7 +42,7 @@ import { DbService } from '../db.service';
 export class HeaderComponent implements OnInit {
   rooms;
 
-  constructor(private db: DbService) {
+  constructor(private db: NewDbService) {
   }
 
   ngOnInit() {
